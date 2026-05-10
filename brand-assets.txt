@@ -1,0 +1,12 @@
+BRAND COLORS
+#4A5CCF (calm blue)
+#2E2E3A (deep slate)
+#A8B4FF (soft lavender)
+#FFFFFF (white)
+
+TYPOGRAPHY
+Headings: Inter Bold
+Body: Inter Regular
+
+LOGO
+Simple wordmark: The Harmonic Reset
