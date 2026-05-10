@@ -24,12 +24,19 @@ export default {
 
 async function requestAccess(request, env) {
 	const body = await request.json().catch(() => null);
-	if (!body || !body.email || !body.receipt) {
-		return json({ message: "Email and receipt are required." }, 400);
+	if (!body || !body.productId || !body.email || !body.receipt) {
+		return json({ message: "Product, email, and receipt are required." }, 400);
 	}
 
+	const productId = String(body.productId).trim();
 	const email = String(body.email).trim().toLowerCase();
 	const receipt = String(body.receipt).trim();
+	const products = getProducts(env);
+	const product = products[productId];
+	if (!product) {
+		return json({ message: "Invalid product selection." }, 400);
+	}
+
 	const key = `purchase:${receipt}:${email}`;
 	const recordRaw = await env.PURCHASES.get(key);
 
@@ -42,9 +49,13 @@ async function requestAccess(request, env) {
 		return json({ message: "This purchase is not currently eligible for access." }, 403);
 	}
 
+	if (record.productId && record.productId !== productId) {
+		return json({ message: "Receipt does not match selected product." }, 403);
+	}
+
 	const expiresInSeconds = Number(env.ACCESS_LINK_TTL_SECONDS || "900");
 	const expiresAt = Math.floor(Date.now() / 1000) + expiresInSeconds;
-	const tokenPayload = `${receipt}|${email}|${expiresAt}`;
+	const tokenPayload = `${productId}|${receipt}|${email}|${expiresAt}`;
 	const signature = await hmacHex(tokenPayload, env.ACCESS_TOKEN_SECRET);
 	const token = btoa(`${tokenPayload}|${signature}`);
 
@@ -66,9 +77,9 @@ async function downloadAudio(request, env) {
 		return new Response("Invalid token", { status: 401 });
 	}
 
-	const [receipt, email, expiresAtRaw, signature] = decoded.split("|");
+	const [productId, receipt, email, expiresAtRaw, signature] = decoded.split("|");
 	const expiresAt = Number(expiresAtRaw);
-	if (!receipt || !email || !expiresAt || !signature) {
+	if (!productId || !receipt || !email || !expiresAt || !signature) {
 		return new Response("Invalid token", { status: 401 });
 	}
 
@@ -76,10 +87,16 @@ async function downloadAudio(request, env) {
 		return new Response("Token expired", { status: 401 });
 	}
 
-	const tokenPayload = `${receipt}|${email}|${expiresAt}`;
+	const tokenPayload = `${productId}|${receipt}|${email}|${expiresAt}`;
 	const expectedSig = await hmacHex(tokenPayload, env.ACCESS_TOKEN_SECRET);
 	if (signature !== expectedSig) {
 		return new Response("Invalid signature", { status: 401 });
+	}
+
+	const products = getProducts(env);
+	const product = products[productId];
+	if (!product || !product.originUrl) {
+		return new Response("Product source unavailable", { status: 404 });
 	}
 
 	const originHeaders = new Headers();
@@ -87,7 +104,7 @@ async function downloadAudio(request, env) {
 		originHeaders.set("Authorization", `Bearer ${env.ORIGIN_AUDIO_BEARER}`);
 	}
 
-	const originRequest = new Request(env.ORIGIN_AUDIO_URL, {
+	const originRequest = new Request(product.originUrl, {
 		method: "GET",
 		headers: originHeaders,
 	});
@@ -99,8 +116,8 @@ async function downloadAudio(request, env) {
 
 	const responseHeaders = new Headers(originResponse.headers);
 	responseHeaders.set("Cache-Control", "private, no-store, max-age=0");
-	responseHeaders.set("Content-Disposition", 'attachment; filename="harmonic-reset.wav"');
-	responseHeaders.set("Content-Type", "audio/wav");
+	responseHeaders.set("Content-Disposition", `attachment; filename="${product.filename || "download.wav"}"`);
+	responseHeaders.set("Content-Type", product.contentType || "audio/wav");
 	responseHeaders.set("X-Robots-Tag", "noindex, nofollow");
 
 	return new Response(originResponse.body, {
@@ -131,6 +148,7 @@ async function clickbankWebhook(request, env) {
 	const receipt = String(payload.receipt || payload.receiptId || "").trim();
 	const email = String(payload.email || payload.customerEmail || "").trim().toLowerCase();
 	const eventType = String(payload.transactionType || payload.eventType || "").toUpperCase();
+ 	const productId = mapProductId(payload, env);
 
 	if (!receipt || !email || !eventType) {
 		return new Response("Bad payload", { status: 400 });
@@ -143,7 +161,7 @@ async function clickbankWebhook(request, env) {
 	if (isActive) {
 		await env.PURCHASES.put(
 			key,
-			JSON.stringify({ status: "active", receipt, email, eventType, updatedAt: new Date().toISOString() }),
+			JSON.stringify({ status: "active", receipt, email, eventType, productId, updatedAt: new Date().toISOString() }),
 			{ expirationTtl: 60 * 60 * 24 * 400 }
 		);
 	}
@@ -151,7 +169,7 @@ async function clickbankWebhook(request, env) {
 	if (isRevoked) {
 		await env.PURCHASES.put(
 			key,
-			JSON.stringify({ status: "revoked", receipt, email, eventType, updatedAt: new Date().toISOString() }),
+			JSON.stringify({ status: "revoked", receipt, email, eventType, productId, updatedAt: new Date().toISOString() }),
 			{ expirationTtl: 60 * 60 * 24 * 400 }
 		);
 	}
@@ -193,4 +211,46 @@ async function hmacHex(message, secret) {
 	return Array.from(sigBytes)
 		.map((b) => b.toString(16).padStart(2, "0"))
 		.join("");
+}
+
+function getProducts(env) {
+	if (env.PRODUCTS_JSON) {
+		try {
+			const parsed = JSON.parse(env.PRODUCTS_JSON);
+			if (parsed && typeof parsed === "object") {
+				return parsed;
+			}
+		} catch {
+			// Fall through to default product.
+		}
+	}
+
+	return {
+		"harmonic-reset": {
+			originUrl: env.ORIGIN_AUDIO_URL,
+			filename: "harmonic-reset.wav",
+			contentType: "audio/wav",
+		},
+	};
+}
+
+function mapProductId(payload, env) {
+	const fallback = "harmonic-reset";
+	const rawItem = String(payload.item || payload.itemNo || payload.cbitems || "").trim();
+	if (!rawItem) {
+		return fallback;
+	}
+
+	if (env.CLICKBANK_ITEM_MAP_JSON) {
+		try {
+			const itemMap = JSON.parse(env.CLICKBANK_ITEM_MAP_JSON);
+			if (itemMap && typeof itemMap === "object" && itemMap[rawItem]) {
+				return String(itemMap[rawItem]);
+			}
+		} catch {
+			return fallback;
+		}
+	}
+
+	return fallback;
 }

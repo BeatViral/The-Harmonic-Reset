@@ -10,6 +10,9 @@ id = "REPLACE_WITH_KV_NAMESPACE_ID"
 PUBLIC_BASE_URL = "https://harmonic-reset-access.YOUR_SUBDOMAIN.workers.dev"
 ACCESS_LINK_TTL_SECONDS = "900"
 ORIGIN_AUDIO_URL = "https://YOUR_PRIVATE_ORIGIN_URL/harmonic-reset.wav"
+# Optional multi-product template mode (recommended for scaling):
+# PRODUCTS_JSON = '{"harmonic-reset":{"originUrl":"https://drive.usercontent.google.com/download?id=FILE_ID&export=download&confirm=t","filename":"harmonic-reset.wav","contentType":"audio/wav"}}'
+# CLICKBANK_ITEM_MAP_JSON = '{"1":"harmonic-reset"}'
 # Google Drive large-file example:
 # ORIGIN_AUDIO_URL = "https://drive.usercontent.google.com/download?id=FILE_ID&export=download&confirm=t"
 

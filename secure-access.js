@@ -1,10 +1,24 @@
 const ACCESS_API_BASE = "https://YOUR-ACCESS-API.workers.dev";
+const PRODUCTS = [
+	{ id: "harmonic-reset", name: "The Harmonic Reset" },
+];
 
 const form = document.getElementById("access-form");
 const statusBox = document.getElementById("access-status");
 const successWrap = document.getElementById("access-success");
 const accessLink = document.getElementById("access-link");
 const verifyBtn = document.getElementById("verify-btn");
+const productSelect = document.getElementById("product-id");
+
+if (productSelect) {
+	productSelect.innerHTML = PRODUCTS.map((product) => `<option value="${product.id}">${product.name}</option>`).join("");
+
+	const query = new URLSearchParams(window.location.search);
+	const requestedProduct = (query.get("product") || "").trim();
+	if (requestedProduct && PRODUCTS.some((product) => product.id === requestedProduct)) {
+		productSelect.value = requestedProduct;
+	}
+}
 
 function showStatus(message, isError = false) {
 	if (!statusBox) {
@@ -21,11 +35,12 @@ if (form) {
 		event.preventDefault();
 
 		const formData = new FormData(form);
+		const productId = String(formData.get("productId") || "").trim();
 		const email = String(formData.get("email") || "").trim().toLowerCase();
 		const receipt = String(formData.get("receipt") || "").trim();
 
-		if (!email || !receipt) {
-			showStatus("Please enter both purchase email and receipt ID.", true);
+		if (!productId || !email || !receipt) {
+			showStatus("Please select product and enter both purchase email and receipt ID.", true);
 			return;
 		}
 
@@ -42,7 +57,7 @@ if (form) {
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({ email, receipt }),
+				body: JSON.stringify({ productId, email, receipt }),
 			});
 
 			const payload = await response.json().catch(() => ({}));

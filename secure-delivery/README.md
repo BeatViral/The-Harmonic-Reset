@@ -2,6 +2,19 @@
 
 This setup creates short-lived access links for verified buyers only.
 
+## Template-Ready Automation
+
+This implementation is reusable for multiple products:
+
+- Buyers verify automatically with product + email + receipt.
+- Worker returns short-lived download links.
+- Product mapping is configurable so you can add new products without rewriting core logic.
+
+Core template inputs:
+
+- `PRODUCTS_JSON` (product id -> origin URL, filename, content type)
+- `CLICKBANK_ITEM_MAP_JSON` (ClickBank item number -> product id)
+
 ## Architecture
 
 1. Buyer reaches `secure-access.html` on GitHub Pages.
@@ -45,6 +58,9 @@ If Node/NPM/Wrangler is not installed on your machine, deploy via Cloudflare Das
        - `PUBLIC_BASE_URL` = your worker URL
        - `ACCESS_LINK_TTL_SECONDS` = `900`
        - `ORIGIN_AUDIO_URL` = `https://drive.usercontent.google.com/download?id=1urpPp4lY4CCXp7jrHFP4SOfpnAxC3T5k&export=download&confirm=t`
+          - Optional scaling vars:
+             - `PRODUCTS_JSON` = paste one-line JSON from `products.example.json`
+             - `CLICKBANK_ITEM_MAP_JSON` = example `{"1":"harmonic-reset","2":"future-product-2"}`
     - Add secrets:
        - `ACCESS_TOKEN_SECRET` = long random string
        - `CLICKBANK_INS_SECRET` = your ClickBank INS shared secret
@@ -52,6 +68,14 @@ If Node/NPM/Wrangler is not installed on your machine, deploy via Cloudflare Das
 6. Save and Deploy.
 7. Update `secure-access.js` `ACCESS_API_BASE` to your worker URL.
 8. Publish your site changes.
+
+## Add New Product (No New Code)
+
+1. Upload the new WAV file and get its origin URL.
+2. Add product entry to `PRODUCTS_JSON`.
+3. Map the ClickBank item number in `CLICKBANK_ITEM_MAP_JSON`.
+4. Link buyers to `secure-access.html?product=your-product-id`.
+5. Done. The same Worker handles all products.
 
 ## Required ClickBank Mapping
 

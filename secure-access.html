@@ -19,6 +19,11 @@
     <section class="section container">
       <h2>Verify Your Purchase</h2>
       <form id="access-form" class="access-form" novalidate>
+        <label for="product-id">Product</label>
+        <select id="product-id" name="productId" required>
+          <option value="harmonic-reset">The Harmonic Reset</option>
+        </select>
+
         <label for="buyer-email">Purchase Email</label>
         <input id="buyer-email" name="email" type="email" autocomplete="email" required />
 
