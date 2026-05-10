@@ -33,6 +33,26 @@ This setup creates short-lived access links for verified buyers only.
 7. Configure ClickBank INS/Webhook endpoint:
    - `https://YOUR_WORKER_URL/clickbank-ins`
 
+## Deploy Without Node/Wrangler (Dashboard Method)
+
+If Node/NPM/Wrangler is not installed on your machine, deploy via Cloudflare Dashboard:
+
+1. Go to Cloudflare Dashboard -> Workers & Pages -> Create -> Worker.
+2. Name it `harmonic-reset-access`.
+3. Replace the worker code with the contents of `worker.js`.
+4. In Settings -> Variables and Secrets:
+    - Add plain variables:
+       - `PUBLIC_BASE_URL` = your worker URL
+       - `ACCESS_LINK_TTL_SECONDS` = `900`
+       - `ORIGIN_AUDIO_URL` = `https://drive.usercontent.google.com/download?id=1urpPp4lY4CCXp7jrHFP4SOfpnAxC3T5k&export=download&confirm=t`
+    - Add secrets:
+       - `ACCESS_TOKEN_SECRET` = long random string
+       - `CLICKBANK_INS_SECRET` = your ClickBank INS shared secret
+5. In Storage -> KV, create namespace `PURCHASES` and bind it to your Worker as `PURCHASES`.
+6. Save and Deploy.
+7. Update `secure-access.js` `ACCESS_API_BASE` to your worker URL.
+8. Publish your site changes.
+
 ## Required ClickBank Mapping
 
 The worker expects webhook payload fields that include:
