@@ -1,0 +1,17 @@
+name = "harmonic-reset-access"
+main = "worker.js"
+compatibility_date = "2026-05-10"
+
+[[kv_namespaces]]
+binding = "PURCHASES"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+[vars]
+PUBLIC_BASE_URL = "https://harmonic-reset-access.YOUR_SUBDOMAIN.workers.dev"
+ACCESS_LINK_TTL_SECONDS = "900"
+ORIGIN_AUDIO_URL = "https://YOUR_PRIVATE_STORAGE_ENDPOINT/harmonic-reset.mp3"
+
+# Set secrets using Wrangler:
+# wrangler secret put ACCESS_TOKEN_SECRET
+# wrangler secret put ORIGIN_AUDIO_BEARER
+# wrangler secret put CLICKBANK_INS_SECRET
