@@ -75,6 +75,14 @@ This local file is intentionally excluded from git and must be uploaded to a pri
 5. Deploy Worker and update `ACCESS_API_BASE` in `secure-access.js`.
 6. Test flow: valid receipt returns short-lived URL; refunded receipt is denied.
 
+## Google Drive Origin (Your Current File)
+
+Use this as `ORIGIN_AUDIO_URL`:
+
+`https://drive.usercontent.google.com/download?id=1urpPp4lY4CCXp7jrHFP4SOfpnAxC3T5k&export=download&confirm=t`
+
+Why this URL: large Drive files often show a virus-scan warning page on normal share links. The `drive.usercontent.google.com` download URL with `confirm=t` is the direct file response format needed for backend streaming.
+
 ## No MP3 Policy
 
 - Delivery is configured for WAV only (`harmonic-reset.wav`).
