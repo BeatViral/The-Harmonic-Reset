@@ -630,6 +630,27 @@ li {
 	border-bottom-color: rgba(15, 26, 71, 0.7);
 }
 
+.cta-band .support-email-link {
+	display: inline-block;
+	margin-top: 0.4rem;
+	padding: 0.5rem 0.8rem;
+	border-radius: 10px;
+	background: linear-gradient(135deg, #1b2c73, #2e45a8);
+	color: #ffffff;
+	font-weight: 800;
+	font-size: 1rem;
+	letter-spacing: 0.01em;
+	text-decoration: none;
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	box-shadow: 0 10px 20px rgba(20, 32, 84, 0.28);
+}
+
+.cta-band .support-email-link:hover,
+.cta-band .support-email-link:focus-visible {
+	background: linear-gradient(135deg, #15245f, #253b92);
+	color: #ffffff;
+}
+
 .site-footer p {
 	margin: 0.3rem 0;
 }
