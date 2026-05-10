@@ -1,4 +1,4 @@
-const ACCESS_API_BASE = "https://YOUR-ACCESS-API.workers.dev";
+const ACCESS_API_BASE = "https://harmonic-reset-access.mahmoodkhanteam.workers.dev";
 const PRODUCTS = [
 	{ id: "harmonic-reset", name: "The Harmonic Reset" },
 ];
