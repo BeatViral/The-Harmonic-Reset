@@ -82,11 +82,14 @@ async function downloadAudio(request, env) {
 		return new Response("Invalid signature", { status: 401 });
 	}
 
+	const originHeaders = new Headers();
+	if (env.ORIGIN_AUDIO_BEARER) {
+		originHeaders.set("Authorization", `Bearer ${env.ORIGIN_AUDIO_BEARER}`);
+	}
+
 	const originRequest = new Request(env.ORIGIN_AUDIO_URL, {
 		method: "GET",
-		headers: {
-			Authorization: `Bearer ${env.ORIGIN_AUDIO_BEARER}`,
-		},
+		headers: originHeaders,
 	});
 
 	const originResponse = await fetch(originRequest);
@@ -96,7 +99,8 @@ async function downloadAudio(request, env) {
 
 	const responseHeaders = new Headers(originResponse.headers);
 	responseHeaders.set("Cache-Control", "private, no-store, max-age=0");
-	responseHeaders.set("Content-Disposition", 'attachment; filename="harmonic-reset.mp3"');
+	responseHeaders.set("Content-Disposition", 'attachment; filename="harmonic-reset.wav"');
+	responseHeaders.set("Content-Type", "audio/wav");
 	responseHeaders.set("X-Robots-Tag", "noindex, nofollow");
 
 	return new Response(originResponse.body, {

@@ -8,7 +8,7 @@ This setup creates short-lived access links for verified buyers only.
 2. Buyer submits purchase email + receipt ID.
 3. Worker checks `PURCHASES` KV for an active purchase.
 4. Worker returns a short-lived tokenized `/download` link.
-5. Worker streams the private audio from protected storage.
+5. Worker streams the private WAV file from your private origin URL.
 
 ## Why this is protected
 
@@ -54,7 +54,7 @@ Adjust these values if your account emits different codes.
 ## Security Notes
 
 - Do not host raw audio files in public GitHub repos.
-- Keep storage private and accessible only via Worker authorization headers.
+- Keep origin URL private and accessible only through the Worker flow.
 - Use a long random `ACCESS_TOKEN_SECRET`.
 - Keep token TTL short (default 15 minutes).
 
@@ -68,9 +68,14 @@ This local file is intentionally excluded from git and must be uploaded to a pri
 
 ## Final Wiring With This File
 
-1. Upload `private-audio/harmonic_reset.wav` to your private storage bucket (R2/S3/Bunny).
-2. Create a private fetch endpoint that requires `Authorization: Bearer ...`.
-3. Set `ORIGIN_AUDIO_URL` in `wrangler.toml` to that private object URL.
-4. Set the matching bearer value with `wrangler secret put ORIGIN_AUDIO_BEARER`.
+1. Keep `private-audio/harmonic_reset.wav` local as your master WAV file.
+2. Upload the same WAV to an origin URL you control (OneDrive private shared link is acceptable).
+3. Set `ORIGIN_AUDIO_URL` in `wrangler.toml` to that WAV origin URL.
+4. If the origin requires bearer auth, set `ORIGIN_AUDIO_BEARER` secret. If not, leave it unset.
 5. Deploy Worker and update `ACCESS_API_BASE` in `secure-access.js`.
 6. Test flow: valid receipt returns short-lived URL; refunded receipt is denied.
+
+## No MP3 Policy
+
+- Delivery is configured for WAV only (`harmonic-reset.wav`).
+- The worker forces WAV content type and WAV download filename.

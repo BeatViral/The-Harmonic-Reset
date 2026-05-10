@@ -9,9 +9,10 @@ id = "REPLACE_WITH_KV_NAMESPACE_ID"
 [vars]
 PUBLIC_BASE_URL = "https://harmonic-reset-access.YOUR_SUBDOMAIN.workers.dev"
 ACCESS_LINK_TTL_SECONDS = "900"
-ORIGIN_AUDIO_URL = "https://YOUR_PRIVATE_STORAGE_ENDPOINT/harmonic-reset.mp3"
+ORIGIN_AUDIO_URL = "https://YOUR_PRIVATE_ORIGIN_URL/harmonic-reset.wav"
 
 # Set secrets using Wrangler:
 # wrangler secret put ACCESS_TOKEN_SECRET
+# Optional: only if your origin needs bearer auth
 # wrangler secret put ORIGIN_AUDIO_BEARER
 # wrangler secret put CLICKBANK_INS_SECRET
