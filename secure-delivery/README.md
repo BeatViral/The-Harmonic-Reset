@@ -57,3 +57,20 @@ Adjust these values if your account emits different codes.
 - Keep storage private and accessible only via Worker authorization headers.
 - Use a long random `ACCESS_TOKEN_SECRET`.
 - Keep token TTL short (default 15 minutes).
+
+## Current Staged Product File
+
+- Local staged file: `private-audio/harmonic_reset.wav`
+- Size: `131.84 MB`
+- SHA256: `F0792F30E8846E91A483903F955E52D1A708DBA60384239E50CE5B2E23FAF7B8`
+
+This local file is intentionally excluded from git and must be uploaded to a private object store.
+
+## Final Wiring With This File
+
+1. Upload `private-audio/harmonic_reset.wav` to your private storage bucket (R2/S3/Bunny).
+2. Create a private fetch endpoint that requires `Authorization: Bearer ...`.
+3. Set `ORIGIN_AUDIO_URL` in `wrangler.toml` to that private object URL.
+4. Set the matching bearer value with `wrangler secret put ORIGIN_AUDIO_BEARER`.
+5. Deploy Worker and update `ACCESS_API_BASE` in `secure-access.js`.
+6. Test flow: valid receipt returns short-lived URL; refunded receipt is denied.
