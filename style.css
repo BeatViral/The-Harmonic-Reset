@@ -619,6 +619,17 @@ li {
 	border-bottom: 1px solid rgba(240, 244, 255, 0.35);
 }
 
+.cta-band .footer-inline-link {
+	color: #1c2a66;
+	border-bottom: 1px solid rgba(28, 42, 102, 0.4);
+}
+
+.cta-band .footer-inline-link:hover,
+.cta-band .footer-inline-link:focus-visible {
+	color: #0f1a47;
+	border-bottom-color: rgba(15, 26, 71, 0.7);
+}
+
 .site-footer p {
 	margin: 0.3rem 0;
 }
